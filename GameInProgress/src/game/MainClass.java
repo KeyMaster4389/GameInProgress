@@ -17,7 +17,10 @@ import java.util.ArrayList;
 
 public class MainClass extends Applet implements Runnable, KeyListener {
 
-	private Player character;
+	static public int WidthOfScreen = 1200;
+	static public int HeightOfScreen = 620;
+	
+	private static Player character;
 	private Image image, characterMovingRightImage, characterMovingRightImage2, characterMovingRightImage3, characterMovingLeftImage, characterMovingLeftImage2, characterMovingLeftImage3;
 	private Image characterMovingUpImage, characterMovingUpImage2, characterMovingUpImage3, characterMovingDownImage, characterMovingDownImage2, characterMovingDownImage3;
 	
@@ -26,21 +29,18 @@ public class MainClass extends Applet implements Runnable, KeyListener {
 	private Graphics second;
 	private URL base;
 	private Animation animR, animL, animU, animD;
-	private char characterWasMoving = 'r'; // r Right - l Left - u Up - d Down.
 
 	private ArrayList<Tile> tilearray = new ArrayList<Tile>();
-	
-	public static final int TILESIZE = 32;
 	
 	@Override
 	public void init() {
 
-		setSize(1200, 620);
+		setSize(WidthOfScreen, HeightOfScreen);
 		setBackground(Color.LIGHT_GRAY);
 		setFocusable(true);
 		addKeyListener(this);
 		Frame frame = (Frame) this.getParent().getParent();
-		frame.setTitle("Key Master");
+		frame.setTitle("Q-Bot Alpha");
 		try {
 			base = getDocumentBase();
 		} catch (Exception e) {
@@ -66,6 +66,7 @@ public class MainClass extends Applet implements Runnable, KeyListener {
 				
 		tiledirt = getImage(base, "images/tile.png");
 		ladder = getImage(base, "images/Ladder.png");
+		//ladder = getImage(base, "images/oie_transparent.png");
         		
 		animR = new Animation();
 		animL = new Animation();
@@ -91,15 +92,15 @@ public class MainClass extends Applet implements Runnable, KeyListener {
 
 	@Override
 	public void start() {
-		// Initialize Tiles
+		character = new Player();
+		
+		// Initialize Tiles	
         try {
             loadMap("images/mapLevel1.txt");
         } catch (IOException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
-		
-		character = new Player();
 
 		Thread thread = new Thread(this);
 		thread.start();
@@ -159,22 +160,21 @@ public class MainClass extends Applet implements Runnable, KeyListener {
 			
 			if(character.isMovingRight() == true){
 				animR.update(20);
-				characterWasMoving = 'r';
+				character.setWasMoving('r');
 			}
 			if(character.isMovingLeft() == true){
 				animL.update(20);
-				characterWasMoving = 'l';
+				character.setWasMoving('l');
 			}
 			if(character.isMovingUp() == true){
 				animU.update(20);
-				characterWasMoving = 'u';
+				character.setWasMoving('u');
 			}
 			if(character.isMovingDown() == true){
 				animD.update(20);
-				characterWasMoving = 'd';
+				character.setWasMoving('d');
 			}
 			
-	
 			updateTiles();
 			repaint();
 			try {
@@ -184,7 +184,7 @@ public class MainClass extends Applet implements Runnable, KeyListener {
 			}
 		}
 	}
-	
+
 	@Override
 	public void update(Graphics g) {
 		if (image == null) {
@@ -205,6 +205,7 @@ public class MainClass extends Applet implements Runnable, KeyListener {
 	public void paint(Graphics g) {
 		paintTiles(g);
 		
+		/* When the character is moving */
 		if(character.isMovingRight() == true){
 			g.drawImage(animR.getImage(), character.getCenterX(), character.getCenterY(), this);
 		}
@@ -218,63 +219,47 @@ public class MainClass extends Applet implements Runnable, KeyListener {
 			g.drawImage(animD.getImage(), character.getCenterX(), character.getCenterY(), this);
 		}
 		
-		if(characterWasMoving == 'r'){
+		/* When the character stops */
+		if(character.wasMoving() == 'r'){ // If the character was moving right, we leave the static sprite image facing right.
 			g.drawImage(animR.getImage(), character.getCenterX(), character.getCenterY(), this);
 		}
-		if(characterWasMoving == 'l'){
+		if(character.wasMoving() == 'l'){
 			g.drawImage(animL.getImage(), character.getCenterX(), character.getCenterY(), this);
 		}
-		if(characterWasMoving == 'u'){
+		if(character.wasMoving() == 'u'){
 			g.drawImage(animU.getImage(), character.getCenterX(), character.getCenterY(), this);
 		}
-		if(characterWasMoving == 'd'){
+		if(character.wasMoving() == 'd'){
 			g.drawImage(animD.getImage(), character.getCenterX(), character.getCenterY(), this);
 		}
-		
+		//g.drawRect((int)character.rect.getX(), (int)character.rect.getY(), (int)character.rect.getWidth(), (int)character.rect.getHeight());
+
 	}
 	
 	private void updateTiles() {
 
-		/*for (int i = 0; i < tilearray.size(); i++) {
+		ArrayList holes = character.getHoles();
+		
+		for (int i = 0; i < tilearray.size(); i++) {
 			Tile t = (Tile) tilearray.get(i);
 			t.update();
-			/*if(t.isVisible() != true){
-				System.out.println("ooo");
-			}*/
-		//}
-		
-		ArrayList holes = character.getHoles();
-		for (int i = 0; i < holes.size(); i++) {
-			Hole h = (Hole) holes.get(i);
-				for (int j = 0; j < tilearray.size(); j++) {
-					Tile t = (Tile) tilearray.get(j);
-					int a = t.getTileX()+27;
-					int b = t.getTileY()-27;
-					//System.out.println("Xh: " + h.getX() );
-					//System.out.println("Yh: " + h.getY());
-					//System.out.println("X: " + t.getTileX() + " " + a);
-					//System.out.println("Y: " + t.getTileY() + " " + b + '\n');
-					//System.out.println("    *" + t.getTileX() + "    *" + b);
-					//System.out.println(character.getCenterX() + " " + character.getCenterY());
-					//System.out.println(t.getTileX() + " " + t.getTileY() + '\n');
-						if ((h.getX() >= t.getTileX() && h.getX() <= a) && (h.getY() <= t.getTileY() && h.getY() >= b)) {
-							//t.visible = false;
-							//System.out.println("siii");
-							t.update();
-						} else {
-							//holes.remove(i);
-							//System.out.println("noo");
+				for (int j = 0; j < holes.size(); j++) {
+					Hole h = (Hole) holes.get(j);
+						/*If the point created in the createHole() method, is inside a tile, we destroy it*/
+						if ((h.getX() >= t.getTileX() && h.getX() < t.getTileX() + 27) && (h.getY() <= t.getTileY() && h.getY() > t.getTileY()-27)) {
+							t.destroyTile();
+								if(t.reContructTile() == true){ // If a title has been destroyed for more than a certain number of iterations, we remove the hole.
+									holes.remove(j);
+										break;
+								}
 						}
 				}
 		}
-		
 	}
 
 	private void paintTiles(Graphics g) {
-		//ArrayList holes = character.getHoles();
 		for (int i = 0; i < tilearray.size(); i++) {
 			Tile t = (Tile) tilearray.get(i);
-			//Hole p = (Hole) holes.get(i);
 				if(t.isVisible() == true){
 					g.drawImage(t.getTileImage(), t.getTileX(), t.getTileY(), this);
 				}
@@ -309,10 +294,7 @@ public class MainClass extends Applet implements Runnable, KeyListener {
 			break;
 			
 		case KeyEvent.VK_CONTROL:
-			//if (robot.isDucked() == false && robot.isJumped() == false) {
 				character.createHole();
-				//System.out.println("siii");
-			//}
 			break;
 
 		}
@@ -347,5 +329,8 @@ public class MainClass extends Applet implements Runnable, KeyListener {
 	public void keyTyped(KeyEvent e) {
 
 	}
-
+	
+	public static Player getPlayer() {
+        return character;
+    }
 }
