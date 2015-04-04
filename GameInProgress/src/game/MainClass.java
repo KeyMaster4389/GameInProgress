@@ -65,7 +65,7 @@ public class MainClass extends Applet implements Runnable, KeyListener {
 		characterMovingDownImage3 = getImage(base, "images/d3.png");
 				
 		tiledirt = getImage(base, "images/tile.png");
-		ladder = getImage(base, "images/Ladder.png");
+		ladder = getImage(base, "images/Ladder2.png");
 		//ladder = getImage(base, "images/oie_transparent.png");
         		
 		animR = new Animation();
