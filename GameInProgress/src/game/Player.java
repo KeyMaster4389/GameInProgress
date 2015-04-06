@@ -7,6 +7,7 @@ import java.util.ArrayList;
 public class Player {
 
 	final int MOVESPEED = 2;
+	final int gravity = 10;
 	
 	private int centerX = 0;
 	private int centerY = 0;
@@ -17,6 +18,7 @@ public class Player {
 	private boolean movingUp = false;
 	private char characterWasMoving = 'r'; // r Right - l Left - u Up - d Down. Saves the last direction on the character.
 	private boolean enableClimbing = false; // Tells if the character is on a ladder.
+	private boolean isDeath = false;
 
 	private int speedX = 0;
 	private int speedY = 0;
@@ -47,11 +49,16 @@ public class Player {
 		}
 		
 		if(enableClimbing == false){
-			centerY = centerY + 2;
+			centerY = centerY + gravity;
 		}
+				
+		if(enableClimbing == true){
+			rect.setRect(centerX + 3, centerY+gravity+3, 20, 28);	
+		}else{
+			rect.setRect(centerX + 3, centerY+3, 20, 28);
+		}
+		enableClimbing = false;	
 		
-		enableClimbing = false;
-		rect.setRect(centerX + 3, centerY, 20, 31);
 	}
 	
 	
@@ -145,17 +152,25 @@ public class Player {
 	
 	public void createHole() { // Creates a point with coordinates X and Y. If that point is inside a tile, then we destroy the tile.
 		if(isMovingRight() || wasMoving() == 'r'){
-			Hole p = new Hole(centerX + 40, centerY + 10);
+			Hole p = new Hole(centerX + 40, centerY + 20);
 			holes.add(p);
 		}
 		if(isMovingLeft() || wasMoving() == 'l'){
-			Hole p = new Hole(centerX - 5, centerY + 10);
+			Hole p = new Hole(centerX - 15, centerY + 20);
 			holes.add(p);
 		}
 		/*if(isMovingDown() || wasMoving() == 'd'){
 			Hole p = new Hole(centerX + 3, centerY + 10);
 			holes.add(p);
 		}*/
+	}
+	
+	public boolean isDeath(){
+		return isDeath;
+	}
+	
+	public void setIsDeath(boolean isDeath) {
+		this.isDeath = isDeath;
 	}
 	
 	public ArrayList getHoles() {

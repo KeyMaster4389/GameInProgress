@@ -15,7 +15,7 @@ public class Tile {
     
     private Player character = MainClass.getPlayer();
     private Rectangle tileRect;
-
+   
 
     public Tile(int x, int y, int typeInt) {
         tileX = x * TiledDIMENTION;
@@ -23,8 +23,7 @@ public class Tile {
 
         type = typeInt;
         
-        tileRect = new Rectangle();
-
+        tileRect = new Rectangle();     
 
         if (type == 1) {
             tileImage = MainClass.tiledirt;
@@ -46,12 +45,13 @@ public class Tile {
         if (tileRect.intersects(Player.rect) && type != 0) {
         	
             checkTileCollision(Player.rect);
-            checkLadderCollision();
+            checkLadderCollision(Player.rect);
         }      
+    
     }
 
-    public void checkTileCollision(Rectangle playerRect) {
-        if (type == 1 && playerRect.intersects(tileRect)){
+    public void checkTileCollision(Rectangle playerRect){ // Checks for collisions between the Player and the Tiles.
+        if (type == 1){
            
         	int b_collision = (int) (tileRect.getMaxY() - character.getCenterY());
 			int t_collision = (int) (playerRect.getMaxY() - tileY);
@@ -59,39 +59,51 @@ public class Tile {
 			int r_collision = (int) (tileRect.getMaxX() - character.getCenterX());
 
 				if (t_collision < b_collision && t_collision < l_collision && t_collision < r_collision && isVisible() == true){ //Top collision (collides with a tile from the Top of the Tile)       
-					character.setCenterY(tileY - 32);
+					//character.setCenterY(tileY - 32);
+					character.setCenterY(tileY - 40);
 	            	character.setSpeedY(0);
 				}
 				if (b_collision < t_collision && b_collision < l_collision && b_collision < r_collision && isVisible() == true){ // Bottom collision (collides with a tile from the Botton of the Tile)
-					character.setCenterY(tileY + 28);
+					//character.setCenterY(tileY + 28);
+					character.setCenterY(tileY +14);
 	            	character.setSpeedY(0);
 				}
 				if (l_collision < r_collision && l_collision < t_collision && l_collision < b_collision && isVisible() == true){ //Left collision (collides with a tile from the Left of the Tile)
 					character.setCenterX(tileX - 24);
+					//character.setCenterX(tileX - 32);
 	            	character.setSpeedX(0);
 				}
 				if (r_collision < l_collision && r_collision < t_collision && r_collision < b_collision && isVisible() == true){ //Right collision (collides with a tile from the Right of the Tile)
 					character.setCenterX(tileX + 24);
+					//character.setCenterX(tileX + 16);
 	            	character.setSpeedX(0);
 				}       	
         }
     }
             
-    private void checkLadderCollision() {
+    private void checkLadderCollision(Rectangle playerRect){ // Checks for collisions between the Player and the Ladders.
+    	
     	if (type == 8){
-        	character.setEnableClimbing(true);
+    		character.setEnableClimbing(true);
         }
+  
 	}
     
     public void destroyTile() {
-    	if(numberOfIterations <= 300){ // Destroys the tile for a certain number of iterations.
-    		numberOfIterations = numberOfIterations + 1;
-    		visible = false;
-    		reconstruct = false;
-    	}else{ // If the tile has been destroyed more than a certain number of iterations, we reconstruct it.
-    		numberOfIterations = 0;
-    		visible = true;
-    		reconstruct = true;
+    	if(type == 1){ // Can only destroy the tiles
+    		if(numberOfIterations <= 300){ // Destroys the tile for a certain number of iterations.
+    			numberOfIterations = numberOfIterations + 1;
+    			visible = false;
+    			reconstruct = false;
+    		}else{ // If the tile has been destroyed more than a certain number of iterations, we reconstruct it.
+    			numberOfIterations = 0; // Reset the count for the iterations.
+    			visible = true;
+    			reconstruct = true;
+    				/* Check if the character is inside a hole when it closes. If he is, kill him. */
+    				if((character.getCenterX()+5 >= getTileX() && character.getCenterX()+5 < getTileX() + 27) && (character.getCenterY() <= getTileY() && character.getCenterY() > getTileY()-27)) {
+    					character.setIsDeath(true);
+    				}
+    		}
     	}
 	}
 

@@ -1,6 +1,7 @@
 package game;
 
 import gameInProgress.framework.Animation;
+import gameInProgress.framework.Clock;
 
 import java.applet.Applet;
 import java.awt.Color;
@@ -21,8 +22,11 @@ public class MainClass extends Applet implements Runnable, KeyListener {
 	static public int HeightOfScreen = 620;
 	
 	private static Player character;
+	private static Clock clock ;
+	//Thread thread,thread2;
 	private Image image, characterMovingRightImage, characterMovingRightImage2, characterMovingRightImage3, characterMovingLeftImage, characterMovingLeftImage2, characterMovingLeftImage3;
 	private Image characterMovingUpImage, characterMovingUpImage2, characterMovingUpImage3, characterMovingDownImage, characterMovingDownImage2, characterMovingDownImage3;
+	public static Image zero, one, two, three, four, five, six, seven, eight, nine, time_label;
 	
 	public static Image ladder, tiledirt;
 	
@@ -36,7 +40,7 @@ public class MainClass extends Applet implements Runnable, KeyListener {
 	public void init() {
 
 		setSize(WidthOfScreen, HeightOfScreen);
-		setBackground(Color.LIGHT_GRAY);
+		setBackground(Color.WHITE);
 		setFocusable(true);
 		addKeyListener(this);
 		Frame frame = (Frame) this.getParent().getParent();
@@ -65,8 +69,22 @@ public class MainClass extends Applet implements Runnable, KeyListener {
 		characterMovingDownImage3 = getImage(base, "images/d3.png");
 				
 		tiledirt = getImage(base, "images/tile.png");
-		ladder = getImage(base, "images/Ladder2.png");
-		//ladder = getImage(base, "images/oie_transparent.png");
+		ladder = getImage(base, "images/Ladder.png");
+		
+		zero = getImage(base, "images/0.png");
+		one = getImage(base, "images/1.png");
+		two = getImage(base, "images/2.png");
+		three = getImage(base, "images/3.png");
+		four = getImage(base, "images/4.png");
+		five = getImage(base, "images/5.png");
+		six = getImage(base, "images/6.png");
+		seven = getImage(base, "images/7.png");
+		eight = getImage(base, "images/8.png");
+		nine = getImage(base, "images/9.png");
+		
+		time_label = getImage(base, "images/time_label.png");
+		
+		
         		
 		animR = new Animation();
 		animL = new Animation();
@@ -93,6 +111,7 @@ public class MainClass extends Applet implements Runnable, KeyListener {
 	@Override
 	public void start() {
 		character = new Player();
+		clock = new Clock();
 		
 		// Initialize Tiles	
         try {
@@ -104,6 +123,9 @@ public class MainClass extends Applet implements Runnable, KeyListener {
 
 		Thread thread = new Thread(this);
 		thread.start();
+		
+		/*Thread thread2 = new Thread();
+		thread2.start();*/
 	}
 	
 	private void loadMap(String filename) throws IOException {
@@ -156,7 +178,9 @@ public class MainClass extends Applet implements Runnable, KeyListener {
 	@Override
 	public void run() {
 		while (true) {
+			
 			character.update();
+			clock.update();
 			
 			if(character.isMovingRight() == true){
 				animR.update(20);
@@ -178,7 +202,7 @@ public class MainClass extends Applet implements Runnable, KeyListener {
 			updateTiles();
 			repaint();
 			try {
-				Thread.sleep(17);
+				Thread.sleep(15);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
@@ -204,35 +228,38 @@ public class MainClass extends Applet implements Runnable, KeyListener {
 	@Override
 	public void paint(Graphics g) {
 		paintTiles(g);
+		paintTime(g);
 		
-		/* When the character is moving */
-		if(character.isMovingRight() == true){
-			g.drawImage(animR.getImage(), character.getCenterX(), character.getCenterY(), this);
-		}
-		if(character.isMovingLeft() == true){
-			g.drawImage(animL.getImage(), character.getCenterX(), character.getCenterY(), this);
-		}
-		if(character.isMovingUp() == true){
-			g.drawImage(animU.getImage(), character.getCenterX(), character.getCenterY(), this);
-		}
-		if(character.isMovingDown() == true){
-			g.drawImage(animD.getImage(), character.getCenterX(), character.getCenterY(), this);
-		}
+		if(character.isDeath() == false){ // If the character is alive.
+			/* When the character is moving */
+			if(character.isMovingRight() == true){
+				g.drawImage(animR.getImage(), character.getCenterX(), character.getCenterY()+character.gravity, this);
+			}
+			if(character.isMovingLeft() == true){
+				g.drawImage(animL.getImage(), character.getCenterX(), character.getCenterY()+character.gravity, this);
+			}
+			if(character.isMovingUp() == true){
+				g.drawImage(animU.getImage(), character.getCenterX(), character.getCenterY()+character.gravity, this);
+			}
+			if(character.isMovingDown() == true){
+				g.drawImage(animD.getImage(), character.getCenterX(), character.getCenterY()+character.gravity, this);
+			}
 		
-		/* When the character stops */
-		if(character.wasMoving() == 'r'){ // If the character was moving right, we leave the static sprite image facing right.
-			g.drawImage(animR.getImage(), character.getCenterX(), character.getCenterY(), this);
+			/* When the character stops */
+			if(character.wasMoving() == 'r'){ // If the character was moving right, we leave the static sprite image facing right.
+				g.drawImage(animR.getImage(), character.getCenterX(), character.getCenterY()+character.gravity, this);
+			}
+			if(character.wasMoving() == 'l'){
+				g.drawImage(animL.getImage(), character.getCenterX(), character.getCenterY()+character.gravity, this);
+			}
+			if(character.wasMoving() == 'u'){
+				g.drawImage(animU.getImage(), character.getCenterX(), character.getCenterY()+character.gravity, this);
+			}
+			if(character.wasMoving() == 'd'){
+				g.drawImage(animD.getImage(), character.getCenterX(), character.getCenterY()+character.gravity, this);
+			}
+			//g.drawRect((int)character.rect.getX(), (int)character.rect.getY(), (int)character.rect.getWidth(), (int)character.rect.getHeight());
 		}
-		if(character.wasMoving() == 'l'){
-			g.drawImage(animL.getImage(), character.getCenterX(), character.getCenterY(), this);
-		}
-		if(character.wasMoving() == 'u'){
-			g.drawImage(animU.getImage(), character.getCenterX(), character.getCenterY(), this);
-		}
-		if(character.wasMoving() == 'd'){
-			g.drawImage(animD.getImage(), character.getCenterX(), character.getCenterY(), this);
-		}
-		//g.drawRect((int)character.rect.getX(), (int)character.rect.getY(), (int)character.rect.getWidth(), (int)character.rect.getHeight());
 
 	}
 	
@@ -248,7 +275,7 @@ public class MainClass extends Applet implements Runnable, KeyListener {
 						/*If the point created in the createHole() method, is inside a tile, we destroy it*/
 						if ((h.getX() >= t.getTileX() && h.getX() < t.getTileX() + 27) && (h.getY() <= t.getTileY() && h.getY() > t.getTileY()-27)) {
 							t.destroyTile();
-								if(t.reContructTile() == true){ // If a title has been destroyed for more than a certain number of iterations, we remove the hole.
+								if(t.reContructTile() == true){ // If a title has been destroyed for more than a certain number of iterations, we remove the hole and reconstruct the tile.
 									holes.remove(j);
 										break;
 								}
@@ -262,8 +289,16 @@ public class MainClass extends Applet implements Runnable, KeyListener {
 			Tile t = (Tile) tilearray.get(i);
 				if(t.isVisible() == true){
 					g.drawImage(t.getTileImage(), t.getTileX(), t.getTileY(), this);
+					//g.drawRect(t.getTileX(), y, width, height);
 				}
 		}
+	}
+	
+	private void paintTime(Graphics g) {
+		g.drawImage(time_label, 5, 1, this);
+		g.drawImage(clock.getTimeImage0(), 140, 1, this);
+		g.drawImage(clock.getTimeImage1(), 120, 1, this);
+		g.drawImage(clock.getTimeImage2(), 100, 1, this);
 	}
 
 	@Override
